@@ -2,7 +2,6 @@
 #include "mersenne_twister.cpp"
 #include <random>
 #include <cmath>
-#include <iostream>
 
 class LD
 {
@@ -32,14 +31,3 @@ private:
 	double sigma;
 	double mu;
 };
-	
-/*
-int main(){
-	LD ld;
-	int i;
-	int imax=100000;
-	for(i=0;i<imax;i++){
-		cout << ld.rand() <<endl;
-	}
-}
-*/

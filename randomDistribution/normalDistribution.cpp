@@ -4,6 +4,9 @@
 #include <cmath>
 #include <iostream>
 
+// class ND: generate normal distribution(sigma,mu) by Box-Muller method
+
+
 class ND
 {
 public:
@@ -40,13 +43,3 @@ private:
 	double mu;
 };
 	
-
-int main(){
-	ND nd;
-	int i;
-	int imax=100000;
-	for(i=0;i<imax;i++){
-		cout << nd.rand() <<endl;
-	}
-}
-
