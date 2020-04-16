@@ -40,7 +40,7 @@ private:
 	double mu;
 };
 	
-/*
+
 int main(){
 	ND nd;
 	int i;
@@ -49,4 +49,4 @@ int main(){
 		cout << nd.rand() <<endl;
 	}
 }
-*/
+
