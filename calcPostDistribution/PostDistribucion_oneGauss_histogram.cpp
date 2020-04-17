@@ -34,6 +34,10 @@ int main(int argc, char** argv){
 	char* fgets_status;
 	int sscanf_status;
 
+	if(config==NULL){
+		cout << "Error in opening the configuration file" << endl;
+		return 0;
+	}
 	//first line: sigma range
 	fgets_status=fgets(line, buffer_length, config);
 	if(fgets_status==NULL){
@@ -82,7 +86,7 @@ int main(int argc, char** argv){
 		return 0;
 	}
 
-	//fourth line: number of the data
+	//fifth line: number of the data
 	fgets_status=fgets(line, buffer_length, config);
 	if(fgets_status==NULL){
 		cout << "Error in loading 5th line of the configuration file" << endl;
@@ -155,6 +159,10 @@ int main(int argc, char** argv){
 	double* value_list=new double[num_data];
 	int* count_list=new int[num_data];
 	FILE* data=fopen(data_file,"r");
+	if(data==NULL){
+		cout << "Error in opening the data file" << endl;
+		return 0;
+	}
 	//skip rows
 	for(i=1;i<data_start_row;i++){
 		fgets_status=fgets(line, buffer_length, data);

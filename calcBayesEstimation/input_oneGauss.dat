@@ -1,0 +1,6 @@
+0.9 1.1 40  # sigma range
+-0.1 0.1 40 # mu range
+ND_sample_1_histo.dat # data file
+7 # start row of the data
+58 # number of data
+-5 5 1000 # range for estimated distribution

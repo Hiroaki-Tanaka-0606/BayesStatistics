@@ -4,15 +4,15 @@
 #include <cmath>
 using namespace std;
 
-//calculate posterior distribution function (model: one Lorentz) from histogram data
+//calculate posterior distribution function (model: one Gaussian) from histogram data
 
 int main(int argc, char** argv){
 	if(argc<2){
 		printf("Usage: %s configuration_file\n",argv[0]);
 		return 0;
 	}
-	cout << "# Posterior Distribution calculation" << endl;
-	cout << "# Model: one Lorentz" << endl;
+	cout << "# Bayes Estimation calculation" << endl;
+	cout << "# Model: one Gaussian" << endl;
 
 	//get file names
 	int fileName_length=256;
@@ -28,6 +28,8 @@ int main(int argc, char** argv){
 	char data_file[fileName_length];
 	int data_start_row;
 	int num_data;
+	double x_start, x_end;
+	int x_split;
 	FILE* config=fopen(config_file,"r");
 	int buffer_length=256;
 	char line[buffer_length];
@@ -38,6 +40,7 @@ int main(int argc, char** argv){
 		cout << "Error in opening the configuration file" << endl;
 		return 0;
 	}
+
 	//first line: sigma range
 	fgets_status=fgets(line, buffer_length, config);
 	if(fgets_status==NULL){
@@ -98,6 +101,18 @@ int main(int argc, char** argv){
 		return 0;
 	}
 
+	//sixth line: mu range
+	fgets_status=fgets(line, buffer_length, config);
+	if(fgets_status==NULL){
+		cout << "Error in loading 6th line of the configuration file" << endl;
+		return 0;
+	}
+	sscanf_status=sscanf(line, "%lf%lf%d", &x_start, &x_end, &x_split);
+	if(sscanf_status!=3){
+		cout << "Error in parsing 6th line of the configuration file" << endl;
+		return 0;
+	}
+
 	//validation of the configuration
 	if(sigma_start<1e-5 || sigma_end<1e-5){
 		cout << "Configuration error: sigma must be positive" << endl;
@@ -118,6 +133,10 @@ int main(int argc, char** argv){
 	if(num_data<0){
 		cout << "Configuration error: number of data must be 0 or positive" << endl;
 	}
+	if(x_split<=0){
+		cout << "Configuration error: x_split must be positive" << endl;
+		return 0;
+	}
 
 	//output configuration
 	
@@ -135,10 +154,13 @@ int main(int argc, char** argv){
 	}
 	cout << "# Data file: " << data_file << endl;
 	cout << "# Data row: " << data_start_row << " to " << (data_start_row+num_data-1) << endl;
+	double x_step=(x_end-x_start)/x_split;
+	cout << "# x: " << x_start << " to " << x_end << ", step " << x_step << endl;
 
-	//generate sigma_list and mu_list
+	//generate sigma_list, mu_list, x_list
 	double* sigma_list=new double[sigma_split+1];
 	double* mu_list=new double[mu_split+1];
+	double* x_list=new double[x_split+1];
 	int i;
 	sigma_list[0]=sigma_start;
 	for(i=1; i<sigma_split+1; i++){
@@ -153,6 +175,9 @@ int main(int argc, char** argv){
 	}
 	for(i=0; i<mu_split+1; i++){
 		cout << "# mu_list[" << i << "] = " << mu_list[i] << endl;
+	}
+	for(i=0; i<x_split+1; i++){
+		x_list[i]=x_start+(x_end-x_start)/x_split*i;
 	}
 	fclose(config);
 	//load data
@@ -219,16 +244,31 @@ int main(int argc, char** argv){
 		}
 	}
 	cout << "# Free energy: " << -log_distribution_function << endl;
-	cout << "# sigma mu posterior_distribution" << endl;
 	//normalization by distribution function
 	double* posterior_distribution[sigma_split+1];
 	for(i=0; i<sigma_split+1; i++){
 		posterior_distribution[i]=new double[mu_split+1];
 		for(j=0; j<mu_split+1; j++){
 			posterior_distribution[i][j]=exp(log_posterior_distribution[i][j]-log_distribution_function);
-			cout << sigma_list[i] << "\t" << mu_list[j] << "\t" << posterior_distribution[i][j] << endl;
 		}
-		cout << endl;
+	}
+
+	//calculation of estimated distribution
+	cout << "# x p_x" << endl;
+	double x;
+	double p_x;
+	for(i=0; i<x_split+1; i++){
+		x=x_list[i];
+		p_x=0.0;
+		for(j=0; j<sigma_split+1; j++){
+			sigma=sigma_list[j];
+			double twopisigma=1.0/(sqrt(2*M_PI)*sigma);
+			for(k=0; k<mu_split+1; k++){
+				mu=mu_list[k];
+				p_x+=posterior_distribution[j][k]*twopisigma*exp(-pow(x-mu,2)/(2*pow(sigma,2)));
+			}
+		}
+		cout << x << "\t" << p_x << endl;
 	}
 	return 1;
 }
