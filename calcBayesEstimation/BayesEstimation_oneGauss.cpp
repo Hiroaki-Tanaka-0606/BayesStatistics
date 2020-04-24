@@ -30,6 +30,8 @@ int main(int argc, char** argv){
 	int num_data;
 	double x_start, x_end;
 	int x_split;
+	char post_file[fileName_length];
+	char Bayes_file[fileName_length];
 	FILE* config=fopen(config_file,"r");
 	int buffer_length=256;
 	char line[buffer_length];
@@ -113,6 +115,30 @@ int main(int argc, char** argv){
 		return 0;
 	}
 
+	//seventh line: posterior distribution file
+	fgets_status=fgets(line, buffer_length, config);
+	if(fgets_status==NULL){
+		cout << "Error in loading 7th line of the configuration file" << endl;
+		return 0;
+	}
+	sscanf_status=sscanf(line, "%s", &post_file[0]);
+	if(sscanf_status!=1){
+		cout << "Error in parsing 7th line of the configuration file" << endl;
+		return 0;
+	}
+
+	//eighth line: Bayes estimation file
+	fgets_status=fgets(line, buffer_length, config);
+	if(fgets_status==NULL){
+		cout << "Error in loading 8th line of the configuration file" << endl;
+		return 0;
+	}
+	sscanf_status=sscanf(line, "%s", &Bayes_file[0]);
+	if(sscanf_status!=1){
+		cout << "Error in parsing 8th line of the configuration file" << endl;
+		return 0;
+	}
+
 	//validation of the configuration
 	if(sigma_start<1e-5 || sigma_end<1e-5){
 		cout << "Configuration error: sigma must be positive" << endl;
@@ -138,24 +164,42 @@ int main(int argc, char** argv){
 		return 0;
 	}
 
+	//open output files
+	FILE* post=fopen(post_file,"w");
+	FILE* Bayes=fopen(Bayes_file, "w");
+
+	fprintf(post, "# Posterior distribution calculation\n");
+	fprintf(Bayes, "# Bayes estimation calculation\n");
+
+	fprintf(post, "# Model: one Gaussian\n");
+	fprintf(Bayes, "# Model: one Gaussian\n");
+
 	//output configuration
 	
 	if(sigma_split==0){
-		cout << "# Sigma: " << sigma_start << endl;
+		fprintf(post, "# Sigma: %f\n", sigma_start);
+		fprintf(Bayes, "# Sigma: %f\n", sigma_start);
 	}else{
 		double sigma_step=(sigma_end-sigma_start)/sigma_split;
-		cout << "# Sigma: " << sigma_start << " to " << sigma_end << ", step " << sigma_step << endl;
+		fprintf(post, "# Sigma: %f to %f, step %f\n", sigma_start, sigma_end, sigma_step);
+		fprintf(Bayes, "# Sigma: %f to %f, step %f\n", sigma_start, sigma_end, sigma_step);
 	}
 	if(mu_split==0){
-		cout << "# Mu: " << mu_start << endl;
+		fprintf(post, "# Mu: %f\n", mu_start);
+		fprintf(Bayes, "# Mu: %f\n", mu_start);
 	}else{
 		double mu_step=(mu_end-mu_start)/mu_split;
-		cout << "# Mu: " << mu_start << " to " << mu_end << ", step " << mu_step << endl;
+		fprintf(post, "# Mu: %f to %f, step %f\n", mu_start, mu_end, mu_step);
+		fprintf(Bayes, "# Mu: %f to %f, step %f\n", mu_start, mu_end, mu_step);
 	}
-	cout << "# Data file: " << data_file << endl;
-	cout << "# Data row: " << data_start_row << " to " << (data_start_row+num_data-1) << endl;
+
+	fprintf(post, "# Data file: %s\n", data_file);
+	fprintf(Bayes, "# Data file: %s\n", data_file);
+	fprintf(post, "# Data row: %d to %d\n", data_start_row, (data_start_row+num_data-1));
+	fprintf(Bayes, "# Data row: %d to %d\n", data_start_row, (data_start_row+num_data-1));
+
 	double x_step=(x_end-x_start)/x_split;
-	cout << "# x: " << x_start << " to " << x_end << ", step " << x_step << endl;
+	fprintf(Bayes, "# x: %f to %f, step %f\n", x_start, x_end, x_step);
 
 	//generate sigma_list, mu_list, x_list
 	double* sigma_list=new double[sigma_split+1];
@@ -167,14 +211,14 @@ int main(int argc, char** argv){
 		sigma_list[i]=sigma_start+(sigma_end-sigma_start)/sigma_split*i;
 	}
 	for(i=0; i<sigma_split+1; i++){
-		cout << "# sigma_list[" << i << "] = " << sigma_list[i] << endl;
+		fprintf(post, "# sigma_list[%d] = %f\n", i, sigma_list[i]);
 	}
 	mu_list[0]=mu_start;
 	for(i=1; i<mu_split+1; i++){
 		mu_list[i]=mu_start+(mu_end-mu_start)/mu_split*i;
 	}
 	for(i=0; i<mu_split+1; i++){
-		cout << "# mu_list[" << i << "] = " << mu_list[i] << endl;
+		fprintf(post, "# mu_list[%d] = %f\n", i, mu_list[i]);
 	}
 	for(i=0; i<x_split+1; i++){
 		x_list[i]=x_start+(x_end-x_start)/x_split*i;
@@ -213,7 +257,7 @@ int main(int argc, char** argv){
 	fclose(data);
 
 	//calculate posterior distribution
-	//model probability function p(x; sigma, mu) = \frac{\sigma}{\pi*((x-\mu)^2+\sigma^2)}
+	//model probability function p(x; sigma, mu) = \frac{1}{\sqrt{2\pi}\sigma} \exp(-\frac{(x-\mu)^2}{2\sigma^2})
 	double prior_distribution=1.0/((sigma_split+1)*(mu_split+1));
 	double log_prior_distribution=-log(sigma_split+1)-log(mu_split+1);
 	//posterioir distribution (before normalization) is stored after taking logarithm
@@ -223,14 +267,14 @@ int main(int argc, char** argv){
 	double sigma, mu;
 	for(i=0; i<sigma_split+1; i++){
 		sigma=sigma_list[i];
-		double log_sigma=log(sigma);
+		double log_2pisigma=-log(sigma)-log(2*M_PI)/2.0;
 		log_posterior_distribution[i]= new double[mu_split+1];
 		for(j=0; j<mu_split+1; j++){
 			mu=mu_list[j];
 			log_posterior_distribution[i][j]=log_prior_distribution;
 			for(k=0; k<num_data; k++){
-				//add log(p(value_list[k]; sigma, mu))^count_list[k]=count_list[k]*(log_sigma-log(pi*((value_list[k]-mu)^2+sigma^2)))
-				log_posterior_distribution[i][j]+=count_list[k]*(log_sigma-log(M_PI*(pow(value_list[k]-mu,2)+pow(sigma,2))));
+				//add log(p(value_list[k]; sigma, mu))^count_list[k]=count_list[k]*(log_2pisigma-(value_list[k]-mu)^2/(2*sigma^2))
+				log_posterior_distribution[i][j]+=count_list[k]*(log_2pisigma-pow(value_list[k]-mu,2)/(2*pow(sigma,2)));
 			}
 			if(i==0 && j==0){
 				//first term
@@ -243,18 +287,22 @@ int main(int argc, char** argv){
 			}
 		}
 	}
-	cout << "# Free energy: " << -log_distribution_function << endl;
+	fprintf(post, "# Free energy: %f\n", -log_distribution_function);
+	fprintf(Bayes, "# Free energy: %f\n", -log_distribution_function);
 	//normalization by distribution function
+	fprintf(post, "# sigma mu posterior_distribution\n");
 	double* posterior_distribution[sigma_split+1];
 	for(i=0; i<sigma_split+1; i++){
 		posterior_distribution[i]=new double[mu_split+1];
 		for(j=0; j<mu_split+1; j++){
 			posterior_distribution[i][j]=exp(log_posterior_distribution[i][j]-log_distribution_function);
+			fprintf(post, "%f\t%f\t%f\n", sigma_list[i], mu_list[j], posterior_distribution[i][j]);
 		}
+		fprintf(post, "\n");
 	}
 
 	//calculation of estimated distribution
-	cout << "# x p_x" << endl;
+	fprintf(Bayes, "# x p_x\n");
 	double x;
 	double p_x;
 	for(i=0; i<x_split+1; i++){
@@ -268,7 +316,10 @@ int main(int argc, char** argv){
 				p_x+=posterior_distribution[j][k]*twopisigma*exp(-pow(x-mu,2)/(2*pow(sigma,2)));
 			}
 		}
-		cout << x << "\t" << p_x << endl;
+		fprintf(Bayes, "%f\t%f\n", x, p_x);
 	}
+
+	fclose(post);
+	fclose(Bayes);
 	return 1;
 }

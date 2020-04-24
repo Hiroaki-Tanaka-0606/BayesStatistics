@@ -1,6 +1,8 @@
-0.5 1.5 50  # sigma range
--0.5 0.5 50 # mu range
+0.5 30 49  # sigma range
+-5 5 50 # mu range
 LD_sample_1_histo.dat # data file
 7 # start row of the data
 204 # number of data
 -5 5 1000 # range for estimated distribution
+post_oneLorentz_GaussModel_sample_1.dat # posterior distribution file
+Bayes_oneLorentz_GaussModel_sample_1.dat # Bayes estimation file
