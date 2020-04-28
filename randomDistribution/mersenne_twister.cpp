@@ -1,6 +1,9 @@
 #include <random>
 #include <iostream>
 
+#ifndef INCLUDED_MT
+#define INCLUDED_MT
+
 using namespace std;
 
 class MT
@@ -31,3 +34,5 @@ int main(){
 	cout << mt.rand() << endl;
 }
 */
+
+#endif

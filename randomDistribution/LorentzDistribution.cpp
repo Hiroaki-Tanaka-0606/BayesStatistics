@@ -3,6 +3,9 @@
 #include <random>
 #include <cmath>
 
+#ifndef INCLUDED_LD
+#define INCLUDED_LD
+
 class LD
 {
 public:
@@ -31,3 +34,5 @@ private:
 	double sigma;
 	double mu;
 };
+
+#endif

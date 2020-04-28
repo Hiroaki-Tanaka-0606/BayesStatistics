@@ -6,6 +6,8 @@
 
 // class ND: generate normal distribution(sigma,mu) by Box-Muller method
 
+#ifndef INCLUDED_ND
+#define INCLUDED_ND
 
 class ND
 {
@@ -43,3 +45,4 @@ private:
 	double mu;
 };
 	
+#endif
