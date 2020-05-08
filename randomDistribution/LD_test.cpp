@@ -1,4 +1,4 @@
-#include "LorentzDistribution.cpp"
+#include "LorentzDistribution.hpp"
 #include <iostream>
 
 // Test program for lorentz distribution

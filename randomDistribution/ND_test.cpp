@@ -1,4 +1,5 @@
-#include "normalDistribution.cpp"
+#include "normalDistribution.hpp"
+#include <iostream>
 
 // Test program for normal distribution
 
