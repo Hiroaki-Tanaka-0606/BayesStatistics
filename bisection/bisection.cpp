@@ -12,7 +12,7 @@
 //stop when sigma < sigma_stop (input)
 
 #include <iostream>
-#include "../randomDistribution/mersenne_twister.cpp"
+#include "../randomDistribution/mersenne_twister.hpp"
 #include <cmath>
 
 //probability f(x)

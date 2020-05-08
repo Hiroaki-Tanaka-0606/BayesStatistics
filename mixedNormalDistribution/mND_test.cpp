@@ -1,4 +1,4 @@
-#include "mixedNormalDistribution.cpp"
+#include "mixedNormalDistribution.hpp"
 #include <iostream>
 #include <string.h>
 
