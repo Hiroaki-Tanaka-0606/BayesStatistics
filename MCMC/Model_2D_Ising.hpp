@@ -17,7 +17,7 @@ public:
   // output the state (one-line text)
   char* print();
   
-  // load parameters from one-line text, with the format same as the output of print(), return 1 when succeeded, 0 otherwise
+  // load parameters from one-line text, with the format same as the output of print(), return 1 when succeeded, negative (error code) otherwise
   int load(char* dataRow); 
 
   // compose a state with a parameter (index) updated according to the parameter sigma (do not always depend on the parameter)
@@ -36,6 +36,9 @@ public:
   // format for the output of one spin
   const char* format="%+2d";
 
+  // format for the input of one spin
+  const char* format_l="%d";
+  
   // iterative format for print();
   const char* format_iter="%s%+2d ";
 };
@@ -43,7 +46,7 @@ public:
 // return data header, which appears at the first row of output
 char* StateHeader();
 
-// Class Hamiltonian
+// class Hamiltonian
 class Hamiltonian{
 public:
   // constructor (adequately modify MCMC_main.cpp according to the arguments)
@@ -55,6 +58,22 @@ public:
   //---- added variables ----//
   double J;
 };
+
+// class Observables
+class Observables{
+public:
+  // constructor
+  Observables(State* s);
+
+  // calculate the total magnetization
+  int Mag();
+
+  // calculate (total magnetization)^2
+  int Mag2();
+private:
+  State* s;
+};
+  
 
 #endif
 

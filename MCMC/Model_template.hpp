@@ -19,7 +19,7 @@ public:
   // output the state (one-line text)
   char* print();
   
-  // load parameters from one-line text, with the format same as the output of print(), return 1 when succeeded, 0 otherwise
+  // load parameters from one-line text, with the format same as the output of print(), return 1 when succeeded, negative (error code) otherwise
   int load(char* dataRow); 
 
   // compose a state with a parameter (index) updated according to the parameter sigma (do not always depend on the parameter)

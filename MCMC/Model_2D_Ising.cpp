@@ -1,5 +1,6 @@
 #include "Model_2D_Ising.hpp"
 #include <stdio.h>
+#include <string.h>
 
 // constructor
 State::State(){
@@ -82,6 +83,28 @@ void State::next(int index, double sigma, State* s_next){
   }
 }
 
+// load parameters from text
+int State::load(char* dataRow){
+  int i;
+  int len=strlen(dataRow);
+  char* buffer=new char[len+1];
+  strcpy(buffer, dataRow);
+  int scanned_len=3; // "%+2d " is a 3-character string
+  int sscanf_status;
+  int j;
+  for(i=0;i<N;i++){
+    sscanf_status=sscanf(buffer, format_l, &parameters[i]);
+
+    if(sscanf_status!=1){
+      return -i;
+    }
+    for(j=0;j<len+1-scanned_len*(i+1);j++){
+      buffer[j]=buffer[j+scanned_len];
+    }
+  }
+  return 1;
+}
+
 // constructor
 Hamiltonian::Hamiltonian(double J){
   Hamiltonian::J=J;
@@ -111,4 +134,26 @@ double Hamiltonian::energy(State* s){
     }
   }
   return e;
+}
+
+// constructor
+Observables::Observables(State* s){
+  Observables::s=s;
+}
+
+// total magnetization
+int Observables::Mag(){
+  int N=State::N;
+  int i;
+  int magtot=0;
+  for(i=0;i<N;i++){
+    magtot+=s->parameters[i];
+  }
+  return magtot;
+}
+
+// (mag)^2
+int Observables::Mag2(){
+  int magtot=Observables::Mag();
+  return magtot*magtot;
 }
