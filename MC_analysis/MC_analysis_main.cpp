@@ -94,8 +94,8 @@ int main(int argc, char** argv){
       if(state_count>=Burnin){
 	data[i][state_count-Burnin]=loaded_value;
       }
-      sprintf(format_buff2, format_iter, format_buff1);
-      //replace buff1 and buff2
+      sprintf(format_buff2, format_iter, format_buff1); // buff2="%*lf"+buff1
+      // replace buff1 and buff2
       format_buff3=format_buff2;
       format_buff2=format_buff1;
       format_buff1=format_buff3;
