@@ -2,6 +2,7 @@
 #include "MC_Metropolis.hpp"
 #include "../randomDistribution/mersenne_twister.hpp"
 #include <iostream>
+#include <string.h>
 
 using namespace std;
 
@@ -23,13 +24,30 @@ int main(int argc, char** argv){
     return -1;
   }
 
+  // State used in the simulation
+  State* s=new State();
+  State* s_next=new State();
+  State* s_buff;
+  int num_params=s->num_params;
+
+  int i,j;
+
+  char* s_print=s->print();
+  int state_length=strlen(s_print);
+  
   double beta; // inverse temperature
   int Nstep; // Number of MC steps
   int buffer_length=256;
   char* state_file=new char[buffer_length]; // development of the state by MC steps
   char* accept_file=new char[buffer_length]; // log of acceptance
   double J; // bond strength
-  int loadConfig_status=loadConfig(config, &beta, &Nstep, state_file, accept_file, &J);
+  char* initial_state=new char[state_length+10]; // +10 for \r, \n, \0
+  for(i=0;i<state_length+9;i++){
+    initial_state[i]='a';
+  }
+  initial_state[state_length+9]='\0';
+
+  int loadConfig_status=loadConfig(config, &beta, &Nstep, state_file, accept_file, &J, initial_state);
   if(loadConfig_status!=1){
     cout << "Failed in loading configuration" << endl;
     return -1;
@@ -41,14 +59,19 @@ int main(int argc, char** argv){
   cout << "Output files: " << state_file << ", " << accept_file << endl;
   cout << "J: " << J << endl;
 
-  Hamiltonian* h=new Hamiltonian(J);
-  State* s=new State();
-  State* s_next=new State();
-  State* s_buff;
-  int i,j;
-  int num_params=s->num_params;
-  double sigma=0;
+  // load initial state
+  int loadInit_status=s->load(initial_state);
+  if(loadInit_status==1){
+    cout << "Initial state is loaded" << endl;
+  }else{
+    cout << "Initial state is not loaded: error" << loadInit_status << endl;
+    s=new State();
+  }
+  cout << "Initial state: " << s->print() << endl;
 
+
+  Hamiltonian* h=new Hamiltonian(J);
+  double sigma=0;
   MT* mt=new MT();
 
   FILE* state_output=fopen(state_file, "w");

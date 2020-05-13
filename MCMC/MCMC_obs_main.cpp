@@ -30,7 +30,8 @@ int main(int argc, char** argv){
   char* state_file=new char[buffer_length]; // development of the state by MC steps
   char* accept_file=new char[buffer_length]; // log of acceptance
   double J; // bond strength
-  int loadConfig_status=loadConfig(config, &beta, &Nstep, state_file, accept_file, &J);
+  char* initial_state=new char[buffer_length]; // not used
+  int loadConfig_status=loadConfig(config, &beta, &Nstep, state_file, accept_file, &J, initial_state);
   if(loadConfig_status!=1){
     cout << "Failed in loading configuration" << endl;
     return -1;
@@ -54,6 +55,7 @@ int main(int argc, char** argv){
   int line_count=0;
 
   FILE* obs_output=fopen(output_file, "w");
+  fprintf(obs_output, "# Energy Mag Mag^2\n");
   while(fgets(buffer, data_length, state_input)!=NULL){
     line_count++;
     if(buffer[0]=='#'){

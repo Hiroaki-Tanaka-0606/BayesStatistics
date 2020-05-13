@@ -89,18 +89,25 @@ int State::load(char* dataRow){
   int len=strlen(dataRow);
   char* buffer=new char[len+1];
   strcpy(buffer, dataRow);
-  int scanned_len=3; // "%+2d " is a 3-character string
+  int format_l_len=strlen(format_l);
+  char* format_buff1=new char[(format_l_len+1)*N+1]; // format_l_len"+1" for "*"
+  char* format_buff2=new char[(format_l_len+1)*N+1];
+  char* format_buff3; // for replace
+  strcpy(format_buff1, format_l);
+  format_buff2[0]='\0';
+
   int sscanf_status;
   int j;
   for(i=0;i<N;i++){
-    sscanf_status=sscanf(buffer, format_l, &parameters[i]);
-
+    sscanf_status=sscanf(buffer, format_buff1, &parameters[i]);
     if(sscanf_status!=1){
       return -i;
     }
-    for(j=0;j<len+1-scanned_len*(i+1);j++){
-      buffer[j]=buffer[j+scanned_len];
-    }
+    sprintf(format_buff2, format_l_iter, format_buff1); //buff2="%*d"+buff1
+    //replace buff1 and buff2
+    format_buff3=format_buff2;
+    format_buff2=format_buff1;
+    format_buff1=format_buff3;
   }
   return 1;
 }

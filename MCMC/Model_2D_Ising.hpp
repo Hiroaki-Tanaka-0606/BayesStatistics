@@ -33,14 +33,17 @@ public:
   // lattice spins, spin of (x, y) = parameters[y*L+x] = -1 or 1 (x,y=0..L-1)
   int parameters[N];
 
-  // format for the output of one spin
-  const char* format="%+2d";
+  // format for the output of one spin (not used)
+  // const char* format="%+2d";
 
-  // format for the input of one spin
+  // format for the load of one spin
   const char* format_l="%d";
   
   // iterative format for print();
   const char* format_iter="%s%+2d ";
+
+  // iterative format for load();
+  const char* format_l_iter="%%*d%s";
 };
 
 // return data header, which appears at the first row of output
