@@ -1,9 +1,10 @@
 #include <iostream>
 #include "../MCMC/Model_selection.hpp"
+#include <string.h>
 
 using namespace std;
 
-int loadConfig(FILE* config, int* Nchains, double* beta, int* Nstep, char* input_file_format, char* state_file_format, char* accept_file_format, char* log_file_format, double* J, char* shell_script);
+int loadConfig(FILE* config, int* Nchains, double* beta, int* Nstep, char* input_file_format, char* state_file_format, char* accept_file_format, char* log_file_format, double* J, char* shell_script, char* input2_file_format, int* Burnin, char* average_file_format, char* variance_file_format, char* log2_file_format, char* value_format, char* input3_file_name, char* psrf_file_format, char* log3_file_name);
 
 
 int main(int argc, char** argv){
@@ -21,7 +22,7 @@ int main(int argc, char** argv){
     cout << "Error in opening the config file" << endl;
     return -1;
   }
-
+  // configuration for MCMC.o
   int Nchains; // number of Marcov chains
   double beta; // inverse temperature
   int Nstep; // Number of MC steps
@@ -32,7 +33,23 @@ int main(int argc, char** argv){
   char* log_file_format=new char[buffer_length]; // name of the log (STDOUT), including %d (chain index)
   double J; //bond strength
   char* shell_script=new char[buffer_length]; // name of the shell script file
-  int loadConfig_status=loadConfig(config, &Nchains, &beta, &Nstep, input_file_format, state_file_format, accept_file_format, log_file_format, &J, shell_script);
+
+  // configuration for Average_analysis.o
+  // number of parameters, buffer size for fgets, state file[i], Nstep, are required
+  char* input2_file_format=new char[buffer_length]; // name of the input 
+  int Burnin; // Burn-in steps
+  char* average_file_format=new char[buffer_length]; // name of the output file for average
+  char* variance_file_format=new char[buffer_length]; // name of the output file for variance
+  char* log2_file_format=new char[buffer_length]; // name of the log
+  char* value_format=new char[buffer_length]; // output format for a value
+  
+  // configuration for PSRF.o
+  // number of parameters, buffer size for fgets, number of MCs, average file format, variance file format, Nstep, are required
+  char* input3_file_name=new char[buffer_length]; // name of the input
+  char* psrf_file_format=new char[buffer_length]; // name of the output for psrf, including %d (parameter index, not chain index)
+  char* log3_file_name=new char[buffer_length]; // name of the log
+
+  int loadConfig_status=loadConfig(config, &Nchains, &beta, &Nstep, input_file_format, state_file_format, accept_file_format, log_file_format, &J, shell_script, input2_file_format, &Burnin, average_file_format, variance_file_format, log2_file_format, value_format, input3_file_name, psrf_file_format, log3_file_name);
   if(loadConfig_status!=1){
     cout << "Failed in loading configuration" << endl;
     return -1;
@@ -51,12 +68,13 @@ int main(int argc, char** argv){
     return -1;
   }
   
-  FILE* input;
+  FILE* input; // for MCMC.o
   int i;
   char* input_file=new char[buffer_length];
   State* s=new State();
   char* initial_state;
   for(i=0;i<Nchains;i++){
+    // MCMC.o
     // open input file
     sprintf(input_file, input_file_format, i+1);
     input=fopen(input_file, "w");
@@ -83,20 +101,80 @@ int main(int argc, char** argv){
     
     fclose(input);
 
-    // add MCMC command to shell file
+    // add command to shell file
     fprintf(shell, "./MCMC.o %s", input_file);
     fprintf(shell, " > ");
     fprintf(shell, log_file_format, i+1);
     fprintf(shell, "\n");
+    
+    // Average_analysis.o
+    sprintf(input_file, input2_file_format, i+1);
+    input=fopen(input_file, "w");
+    if(input==NULL){
+      cout << "Error in opening the input2 file" << endl;
+      return -1;
+    }
+    // line 1: Number of parameters
+    fprintf(input, "%d # Number of parameters\n", s->num_params);
+    // line 2: buffer size (length of print())
+    fprintf(input, "%d # buffer size\n", strlen(initial_state));
+    // line 3: input (state file)
+    fprintf(input, state_file_format, i+1);
+    fprintf(input, " # input file (state)\n");
+    // line 4: Number of MC steps
+    fprintf(input, "%d # Number of MC steps\n", Nstep);
+    // line 5: Burnin
+    fprintf(input, "%d # Burnin\n", Burnin);
+    // line 6: Average file
+    fprintf(input, average_file_format, i+1);
+    fprintf(input, " # Average file\n");
+    // line 7: Variance file
+    fprintf(input, variance_file_format, i+1);
+    fprintf(input, " # Variance file\n");
+    // line 8: Value format
+    fprintf(input, "%s # Value format\n", value_format);
+    
+    fclose(input);
+
+    // add command
+    fprintf(shell, "./Average_analysis.o %s", input_file);
+    fprintf(shell, " > ");
+    fprintf(shell, log2_file_format, i+1);
+    fprintf(shell, "\n");
+    
     fprintf(shell, "echo 'Done %d / %d'\n", i+1, Nchains);
   }
 
-  
+  // PSRF.o
+  input=fopen(input3_file_name,"w");
+  if(input==NULL){
+    cout << "Error in opening the input3 file" << endl;
+    return -1;
+  }
+  // line 1: Number of parameters
+  fprintf(input, "%d # Number of parameters\n", s->num_params);
+  // line 2: Buffer size
+  char* value_print=new char[buffer_length];
+  sprintf(value_print, value_format, 0.0);
+  fprintf(input, "%d # Buffer size\n", (s->num_params)*(1+strlen(value_print)));
+  // line 3: Number of Marcov chains
+  fprintf(input, "%d # Number of Marcov Chains\n", Nchains);
+  // line 4: Average file format
+  fprintf(input, "%s # average file format\n", average_file_format);
+  // line 5: variance file format
+  fprintf(input, "%s # variance file format\n", variance_file_format);
+  // line 6: output file format
+  fprintf(input, "%s # output file format\n", psrf_file_format);
+
+  fclose(input);
+
+  // add command
+  fprintf(shell, "./PSRF.o %s > %s\n", input3_file_name, log3_file_name);
   fclose(shell);
   return 1;
 }
 
-int loadConfig(FILE* config, int* Nchains, double* beta, int* Nstep, char* input_file_format, char* state_file_format, char* accept_file_format, char* log_file_format, double* J, char* shell_script){
+int loadConfig(FILE* config, int* Nchains, double* beta, int* Nstep, char* input_file_format, char* state_file_format, char* accept_file_format, char* log_file_format, double* J, char* shell_script, char* input2_file_format, int* Burnin, char* average_file_format, char* variance_file_format, char* log2_file_format, char* value_format, char* input3_file_name, char* psrf_file_format, char* log3_file_name){
   int buffer_length=1024;
   char line[buffer_length];
   char* fgets_status;
@@ -212,5 +290,114 @@ int loadConfig(FILE* config, int* Nchains, double* beta, int* Nstep, char* input
     return 0;
   }
 
+  // line 10: input2_file_format
+  fgets_status=fgets(line, buffer_length, config);
+  if(fgets_status==NULL){
+    cout << "Error in loading line 10 of the configuration file" << endl;
+    return 0;
+  }
+  sscanf_status=sscanf(line, "%s", input2_file_format);
+  if(sscanf_status!=1){
+    cout << "Error in parsing line 10 of the configuration file" << endl;
+    return 0;
+  }
+
+  // line 11: Burnin
+  fgets_status=fgets(line, buffer_length, config);
+  if(fgets_status==NULL){
+    cout << "Error in loading line 11 of the configuration file" << endl;
+    return 0;
+  }
+  sscanf_status=sscanf(line, "%d", Burnin);
+  if(sscanf_status!=1){
+    cout << "Error in parsing line 11 of the configuration file" << endl;
+    return 0;
+  }
+
+  // line 12: average file format
+  fgets_status=fgets(line, buffer_length, config);
+  if(fgets_status==NULL){
+    cout << "Error in loading line 12 of the configuration file" << endl;
+    return 0;
+  }
+  sscanf_status=sscanf(line, "%s", average_file_format);
+  if(sscanf_status!=1){
+    cout << "Error in parsing line 12 of the configuration file" << endl;
+    return 0;
+  }
+
+  // line 13: variance file format
+  fgets_status=fgets(line, buffer_length, config);
+  if(fgets_status==NULL){
+    cout << "Error in loading line 13 of the configuration file" << endl;
+    return 0;
+  }
+  sscanf_status=sscanf(line, "%s", variance_file_format);
+  if(sscanf_status!=1){
+    cout << "Error in parsing line 13 of the configuration file" << endl;
+    return 0;
+  }
+
+  // line 14: log file format
+  fgets_status=fgets(line, buffer_length, config);
+  if(fgets_status==NULL){
+    cout << "Error in loading line 14 of the configuration file" << endl;
+    return 0;
+  }
+  sscanf_status=sscanf(line, "%s", log2_file_format);
+  if(sscanf_status!=1){
+    cout << "Error in parsing line 14 of the configuration file" << endl;
+    return 0;
+  }
+
+  // line 15: value format
+  fgets_status=fgets(line, buffer_length, config);
+  if(fgets_status==NULL){
+    cout << "Error in loading line 15 of the configuration file" << endl;
+    return 0;
+  }
+  sscanf_status=sscanf(line, "%s", value_format);
+  if(sscanf_status!=1){
+    cout << "Error in parsing line 15 of the configuration file" << endl;
+    return 0;
+  }
+
+  
+  // line 16: input3 file name
+  fgets_status=fgets(line, buffer_length, config);
+  if(fgets_status==NULL){
+    cout << "Error in loading line 16 of the configuration file" << endl;
+    return 0;
+  }
+  sscanf_status=sscanf(line, "%s", input3_file_name);
+  if(sscanf_status!=1){
+    cout << "Error in parsing line 16 of the configuration file" << endl;
+    return 0;
+  }
+
+  // line 17: output file format
+  fgets_status=fgets(line, buffer_length, config);
+  if(fgets_status==NULL){
+    cout << "Error in loading line 17 of the configuration file" << endl;
+    return 0;
+  }
+  sscanf_status=sscanf(line, "%s", psrf_file_format);
+  if(sscanf_status!=1){
+    cout << "Error in parsing line 17 of the configuration file" << endl;
+    return 0;
+  }
+
+  // line 18: log file
+  fgets_status=fgets(line, buffer_length, config);
+  if(fgets_status==NULL){
+    cout << "Error in loading line 18 of the configuration file" << endl;
+    return 0;
+  }
+  sscanf_status=sscanf(line, "%s", log3_file_name);
+  if(sscanf_status!=1){
+    cout << "Error in parsing line 18 of the configuration file" << endl;
+    return 0;
+  }
+  
   return 1;
 }
