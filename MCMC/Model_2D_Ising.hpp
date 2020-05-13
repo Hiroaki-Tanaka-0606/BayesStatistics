@@ -23,6 +23,9 @@ public:
   // compose a state with a parameter (index) updated according to the parameter sigma (do not always depend on the parameter)
   void next(int index, double sigma, State* s_next);
 
+  // randomly initialize
+  void init_rand();
+  
   //---- added variables ----//
   // lattice size
   static const int L=LATTICE_SIZE;

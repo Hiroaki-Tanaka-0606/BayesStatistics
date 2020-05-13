@@ -1,6 +1,7 @@
 #include "Model_2D_Ising.hpp"
 #include <stdio.h>
 #include <string.h>
+#include "../randomDistribution/mersenne_twister.hpp"
 
 // constructor
 State::State(){
@@ -110,6 +111,19 @@ int State::load(char* dataRow){
     format_buff1=format_buff3;
   }
   return 1;
+}
+
+void State::init_rand(){
+  MT* mt=new MT();
+  int i;
+  for(i=0;i<N;i++){
+    double rand=mt->rand();
+    if(rand<0.5){
+      parameters[i]=-1;
+    }else{
+      parameters[i]=1;
+    }
+  }
 }
 
 // constructor

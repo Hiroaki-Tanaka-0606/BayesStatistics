@@ -1,0 +1,6 @@
+4.2000e-01 # beta
+100000 # Nstep
+State_2D_Ising_4.dat # state file
+Accept_2D_Ising_4.dat # accept file
+1.0000e+00 # J
++1 -1 +1 -1 +1 +1 +1 -1 +1 +1 +1 -1 +1 +1 -1 +1  # initial state

@@ -1,0 +1,12 @@
+10 # Number of MCs
+0.42 # inverse temperature
+100000 # Number of MC steps
+Input_2D_Ising_%d.dat # input file
+State_2D_Ising_%d.dat # state file
+Accept_2D_Ising_%d.dat # accept log
+Log_2D_Ising_%d.dat # STDOUT
+1 # J
+MC_multiple.sh # shell script
+
+
+
