@@ -1,9 +1,0 @@
-MCMC calculation
-Configuration file: Input_2D_Ising_10.dat
-Read initial state
-Inverse temperature: 0.42
-Number of MC steps: 100000
-Output files: State_2D_Ising_10.dat, Accept_2D_Ising_10.dat
-J: 1
-Initial state is loaded
-Initial state: +1 -1 -1 +1 -1 -1 -1 +1 +1 -1 -1 +1 +1 -1 -1 +1 
