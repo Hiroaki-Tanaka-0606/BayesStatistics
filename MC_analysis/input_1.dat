@@ -1,0 +1,9 @@
+Obs_2D_Ising_4.dat
+1000000
+10000
+3
+Energy
+Magnetization
+Magnetization^2
+50000
+Analysis_2D_Ising_%s.dat
