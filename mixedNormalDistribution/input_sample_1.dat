@@ -1,5 +1,0 @@
-10000 # Number of samples
-2 # Number of NDs
-1 0 8 # sigma, mu, weight of ND[0]
-1 1 2 # those of ND[1]
-

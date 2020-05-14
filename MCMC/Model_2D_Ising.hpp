@@ -3,7 +3,7 @@
 
 // 2D Ising Model (periodic boundary condition) used in MCMC simulation
 // lattice size
-#define LATTICE_SIZE 4
+#define LATTICE_SIZE 8
 
 // class State
 class State{

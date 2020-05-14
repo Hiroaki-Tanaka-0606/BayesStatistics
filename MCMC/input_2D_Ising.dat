@@ -1,6 +1,0 @@
-0.42 # beta
-100000 # Nstep
-State_2D_Ising.dat # State file
-Accept_2D_Ising.dat # Accept file
-1 # J
-+1 +1 +1 -1 +1 +1 +1 +1 -1 +1 +1 -1 +1 +1 +1 +1

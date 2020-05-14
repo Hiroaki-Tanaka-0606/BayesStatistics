@@ -1,5 +1,0 @@
-0.5 1.5 50  # sigma range
--0.5 0.5 50 # mu range
-LD_sample_3.dat # data file
-4 # start row of the data
-1000 # number of data

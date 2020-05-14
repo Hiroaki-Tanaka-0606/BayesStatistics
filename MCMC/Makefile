@@ -12,9 +12,7 @@ MCMC_obs.o: MCMC_obs_main.o $(model)
 .cpp.o:
 	$(CXX) -c $<
 
-.hpp.o:
-	$(CXX) -c $<
-
 MCMC_main.o: $(model_hpp) MC_Metropolis.hpp
 MCMC_obs_main.o: $(model_hpp)
 MC_Metropolis.o: $(model_hpp)
+Model_2D_Ising.o: Model_2D_Ising.hpp

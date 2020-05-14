@@ -1,5 +1,0 @@
-0.02 1 49  # sigma range
--0.2 0.2 40 # mu range
-ND_sample_1_histo.dat # data file
-7 # start row of the data
-58 # number of data
