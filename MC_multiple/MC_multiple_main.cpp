@@ -44,7 +44,7 @@ int main(int argc, char** argv){
   char* value_format=new char[buffer_length]; // output format for a value
   
   // configuration for PSRF.o
-  // number of parameters, buffer size for fgets, number of MCs, average file format, variance file format, Nstep, are required
+  // number of parameters, buffer size for fgets, number of MCs, , average file format, variance file format, Nstep-Burnin, are required
   char* input3_file_name=new char[buffer_length]; // name of the input
   char* psrf_file_format=new char[buffer_length]; // name of the output for psrf, including %d (parameter index, not chain index)
   char* log3_file_name=new char[buffer_length]; // name of the log
@@ -67,6 +67,7 @@ int main(int argc, char** argv){
     cout << "Error in opening the shell script file" << endl;
     return -1;
   }
+  fprintf(shell, "echo 'Start MCMC.o and Average_analysis.o (Total %d)'\n", Nchains);
   
   FILE* input; // for MCMC.o
   int i;
@@ -163,12 +164,15 @@ int main(int argc, char** argv){
   fprintf(input, "%s # average file format\n", average_file_format);
   // line 5: variance file format
   fprintf(input, "%s # variance file format\n", variance_file_format);
-  // line 6: output file format
+  // line 6: Nstep-Burnin
+  fprintf(input, "%d # Nstep - Burnin\n", Nstep-Burnin);
+  // line 7: output file format
   fprintf(input, "%s # output file format\n", psrf_file_format);
 
   fclose(input);
 
   // add command
+  fprintf(shell, "echo 'Start PSRF.o'\n");
   fprintf(shell, "./PSRF.o %s > %s\n", input3_file_name, log3_file_name);
   fclose(shell);
   return 1;

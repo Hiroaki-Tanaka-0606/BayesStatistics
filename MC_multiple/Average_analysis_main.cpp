@@ -85,6 +85,8 @@ int main(int argc, char** argv){
   
 
   int sscanf_status;
+  int sscanf_status_all;
+  double* loaded_value=new double[Nparams];
   while(fgets(buffer, buffer_length_data, input)!=NULL){
     line_count++;
     if(buffer[0]=='#'){
@@ -95,17 +97,12 @@ int main(int argc, char** argv){
     format_buff1[1]='l';
     format_buff1[2]='f';
     format_buff1[3]='\0';
-    int sscanf_status_all=1;
+    sscanf_status_all=1;
     for(i=0;i<Nparams;i++){
-      double loaded_value;
-      sscanf_status=sscanf(buffer, format_buff1, &loaded_value);
+      sscanf_status=sscanf(buffer, format_buff1, &loaded_value[i]);
       if(sscanf_status!=1){
 	sscanf_status_all=0;
 	break;
-      }
-      if(state_count>=Burnin){ // state_count is not yet increased
-	sum_array[i]+=loaded_value;
-	sum2_array[i]+=loaded_value*loaded_value;
       }
       sprintf(format_buff2, format_iter, format_buff1); // buff2="%*lf"+buff1
       // replace buff1 and buff2
@@ -116,6 +113,10 @@ int main(int argc, char** argv){
     if(sscanf_status_all==1){
       state_count++;
       if(state_count>Burnin){ // state_count is already increased
+	for(i=0;i<Nparams;i++){
+	  sum_array[i]+=loaded_value[i];
+	  sum2_array[i]+=loaded_value[i]*loaded_value[i];
+	}
 	int state_used=state_count-Burnin;
 	// output average and variance
 	for(i=0;i<Nparams;i++){
@@ -142,6 +143,12 @@ int main(int argc, char** argv){
 
   fclose(average);
   fclose(variance);
+
+  if(state_count==Nstep){
+    cout << "Calculation succeeded" << endl;
+  }else{
+    cout << "Calculation failed" << endl;
+  }
   
   return 1;
 }

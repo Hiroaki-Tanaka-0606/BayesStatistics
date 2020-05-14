@@ -1,3 +1,4 @@
+echo 'Start MCMC.o and Average_analysis.o (Total 10)'
 ./MCMC.o Input_2D_Ising_1.dat > Log_2D_Ising_1.dat
 ./Average_analysis.o Input2_2D_Ising_1.dat > Log2_2D_Ising_1.dat
 echo 'Done 1 / 10'
@@ -28,4 +29,5 @@ echo 'Done 9 / 10'
 ./MCMC.o Input_2D_Ising_10.dat > Log_2D_Ising_10.dat
 ./Average_analysis.o Input2_2D_Ising_10.dat > Log2_2D_Ising_10.dat
 echo 'Done 10 / 10'
+echo 'Start PSRF.o'
 ./PSRF.o Input3_2D_Ising.dat > Log3_2D_Ising.dat
