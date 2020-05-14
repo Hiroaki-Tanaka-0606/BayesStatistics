@@ -94,9 +94,11 @@ int main(int argc, char** argv){
     accept_count[i]=0;
   }
   
+  char* state_string=s->print();
+  int accept;
   for(i=0;i<Nstep;i++){
     for(j=0;j<num_params;j++){
-      int accept=MC_Metropolis(s,s_next,h,j,sigma,beta,mt);
+      accept=MC_Metropolis(s,s_next,h,j,sigma,beta,mt);
       if(accept==1){
 	//replace s and s_next
 	s_buff=s_next;
@@ -107,8 +109,8 @@ int main(int argc, char** argv){
       fprintf(accept_output, "%1d ", accept);
     }
     fprintf(accept_output, "\n");
-    
-    char* state_string=s->print();
+    delete state_string;
+    state_string=s->print();
     fprintf(state_output, state_string);
     fprintf(state_output, "\n");
   }

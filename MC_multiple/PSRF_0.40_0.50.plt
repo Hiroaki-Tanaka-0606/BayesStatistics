@@ -125,14 +125,14 @@ set xlabel ""
 set xlabel  font "" textcolor lt -1 norotate
 set x2label "" 
 set x2label  font "" textcolor lt -1 norotate
-set xrange [ * : * ] noreverse writeback
-set x2range [ * : * ] noreverse writeback
+set xrange [ 1.00000 : 90000.0 ] noreverse writeback
+set x2range [ 1.00000 : 90000.0 ] noreverse writeback
 set ylabel "" 
 set ylabel  font "" textcolor lt -1 rotate
 set y2label "" 
 set y2label  font "" textcolor lt -1 rotate
 set yrange [ * : * ] noreverse writeback
-set y2range [ * : * ] noreverse writeback
+set y2range [ 1.03219 : 1.35209 ] noreverse writeback
 set zlabel "" 
 set zlabel  font "" textcolor lt -1 norotate
 set zrange [ * : * ] noreverse writeback
@@ -166,5 +166,5 @@ set psdir
 set fit brief errorvariables nocovariancevariables errorscaling prescale nowrap v5
 GNUTERM = "wxt"
 ## Last datafile plotted: "2D_Ising_0.50/PSRF_2D_Ising_Parm1.dat"
-plot "2D_Ising_0.42/PSRF_2D_Ising_Parm1.dat" using 1:8 w l title "{/Symbol b}=0.42", "2D_Ising_0.43/PSRF_2D_Ising_Parm1.dat" using 1:8 w l title "{/Symbol b}=0.43", "2D_Ising_0.44/PSRF_2D_Ising_Parm1.dat" using 1:8 w l title "{/Symbol b}=0.44", "2D_Ising_0.45/PSRF_2D_Ising_Parm1.dat" using 1:8 w l title "{/Symbol b}=0.45", "2D_Ising_0.46/PSRF_2D_Ising_Parm1.dat" using 1:8 w l title "{/Symbol b}=0.46", "2D_Ising_0.47/PSRF_2D_Ising_Parm1.dat" using 1:8 w l title "{/Symbol b}=0.47", "2D_Ising_0.48/PSRF_2D_Ising_Parm1.dat" using 1:8 w l title "{/Symbol b}=0.48", "2D_Ising_0.49/PSRF_2D_Ising_Parm1.dat" using 1:8 w l title "{/Symbol b}=0.49", "2D_Ising_0.50/PSRF_2D_Ising_Parm1.dat" using 1:8 w l title "{/Symbol b}=0.50", 1.1 title "PSRF criterion"
+plot "2D_Ising_0.40/PSRF_2D_Ising_Parm1.dat" using 1:8 w l title "{/Symbol b}=0.40", "2D_Ising_0.41/PSRF_2D_Ising_Parm1.dat" using 1:8 w l title "{/Symbol b}=0.41", "2D_Ising_0.42/PSRF_2D_Ising_Parm1.dat" using 1:8 w l title "{/Symbol b}=0.42", "2D_Ising_0.43/PSRF_2D_Ising_Parm1.dat" using 1:8 w l title "{/Symbol b}=0.43", "2D_Ising_0.44/PSRF_2D_Ising_Parm1.dat" using 1:8 w l title "{/Symbol b}=0.44", "2D_Ising_0.45/PSRF_2D_Ising_Parm1.dat" using 1:8 w l title "{/Symbol b}=0.45", "2D_Ising_0.46/PSRF_2D_Ising_Parm1.dat" using 1:8 w l title "{/Symbol b}=0.46", "2D_Ising_0.47/PSRF_2D_Ising_Parm1.dat" using 1:8 w l title "{/Symbol b}=0.47", "2D_Ising_0.48/PSRF_2D_Ising_Parm1.dat" using 1:8 w l title "{/Symbol b}=0.48", "2D_Ising_0.49/PSRF_2D_Ising_Parm1.dat" using 1:8 w l title "{/Symbol b}=0.49", "2D_Ising_0.50/PSRF_2D_Ising_Parm1.dat" using 1:8 w l title "{/Symbol b}=0.50", 1.1 title "PSRF criterion"
 #    EOF

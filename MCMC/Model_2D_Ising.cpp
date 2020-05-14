@@ -69,6 +69,7 @@ char* State::print(){
       ret_buff1=ret_buff3;
     }
   }
+  delete ret_buff1;
   return ret_buff2;
 }
 
