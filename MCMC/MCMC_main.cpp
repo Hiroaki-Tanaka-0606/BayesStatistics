@@ -64,7 +64,7 @@ int main(int argc, char** argv){
   if(loadInit_status==1){
     cout << "Initial state is loaded" << endl;
   }else{
-    cout << "Initial state is not loaded: error" << loadInit_status << endl;
+    cout << "Initial state is not loaded: error " << loadInit_status << endl;
     s=new State();
   }
   cout << "Initial state: " << s->print() << endl;
