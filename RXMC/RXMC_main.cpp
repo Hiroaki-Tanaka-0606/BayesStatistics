@@ -191,11 +191,14 @@ int main(int argc, char** argv){
       }
       fprintf(exchange_output, "%+2d ", accept);
       // space-filling
-      if(i%2==0){
+      if(i%2==0 && !((Nreplica-1)%2==1 && index_high==Nreplica-1)){
 	fprintf(exchange_output, " 0 ");
       }
       index_low+=2;
       index_high+=2;
+    }
+    if((Nreplica-1)%2==1 && index_low == Nreplica-1){
+      fprintf(exchange_output, " 0 ");
     }
     fprintf(exchange_output, "\n");
 

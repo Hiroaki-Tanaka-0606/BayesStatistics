@@ -103,10 +103,11 @@ int loadConfig_RXMC(FILE* config, int* Nreplica, double** beta_pointer, int* Nst
   char** initial_state=new char*[*Nreplica];
   initial_state_pointer[0]=initial_state;
   for(i=0;i<*Nreplica;i++){
-    initial_state[i]=new char[state_buffer_length+1];
-    fgets_status=fgets(&initial_state[i][0], state_buffer_length, config);
+    initial_state[i]=new char[state_buffer_length+256]; // +256 for comments
+    fgets_status=fgets(&initial_state[i][0], state_buffer_length+255, config);
     if(fgets_status!=NULL){
       cout << "Read initial state for replica " << i+1 << endl;
+      // cout << initial_state[i] << endl;
     }else{
       cout << "Not read initial state for replica " << i+1 << endl;
     }
