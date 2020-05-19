@@ -5,10 +5,10 @@
 int MC_Metropolis(State* s, State* s_next, Hamiltonian* h, int index, double sigma, double beta, MT* mt){
   
   s->next(index, sigma, s_next);
-  double e1=h->energy(s);
-  double e2=h->energy(s_next);
+  double bh1=h->betaH(s,beta);
+  double bh2=h->betaH(s_next,beta);
 
-  double threshold=exp(-beta*(e2-e1));
+  double threshold=exp(-(bh1-bh2));
   double rand=mt->rand();
   if(rand<threshold){
     // accept

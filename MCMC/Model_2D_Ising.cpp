@@ -161,6 +161,12 @@ double Hamiltonian::energy(State* s){
   return e;
 }
 
+// calculate beta*(H(s)-1/beta log(psi(s)))=beta*H(s)-log(psi(s))
+// log(psi(s)) term is neglected
+double Hamiltonian::betaH(State* s, double beta){
+  return beta*Hamiltonian::energy(s);
+}
+
 // constructor
 Observables::Observables(State* s){
   Observables::s=s;

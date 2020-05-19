@@ -34,8 +34,14 @@ class Hamiltonian{
   // constructor (adequately modify MCMC_main.cpp according to the arguments)
   Hamiltonian();
 
-  // calculate the energy of the state s
+  // calculate the energy of the state s H(s)
+  // used in RX prcess
   double energy(State* s);
+
+  // calculate beta*(H(s)-1/beta log(psi(s)))=beta*H(s)-log(psi(s))
+  // if psi(s) is an uniform prior distribution, log(psi(s)) term can be neglected
+  // used in MC process
+  double betaH(State* s, double beta);
   
 }
 
