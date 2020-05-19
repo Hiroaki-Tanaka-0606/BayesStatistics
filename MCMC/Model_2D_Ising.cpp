@@ -111,6 +111,9 @@ int State::load(char* dataRow){
     format_buff2=format_buff1;
     format_buff1=format_buff3;
   }
+  delete buffer;
+  delete format_buff1;
+  delete format_buff2;
   return 1;
 }
 
