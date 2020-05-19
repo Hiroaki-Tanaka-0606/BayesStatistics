@@ -140,7 +140,7 @@ int main(int argc, char** argv){
     // MC step
     for(j=0;j<Nreplica;j++){
       for(k=0;k<num_params;k++){
-	accept=MC_Metropolis(ss[j],s_next,h,j,sigma,beta[j],mt);
+	accept=MC_Metropolis(ss[j],s_next,h,k,sigma,beta[j],mt);
 	if(accept==1){
 	  //replace s and s_next
 	  s_buff=s_next;

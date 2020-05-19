@@ -1,14 +1,17 @@
 #include <iostream>
 #include "../MCMC/Model_selection.hpp"
 #include <string.h>
+#include <cmath>
 
 using namespace std;
 
 int loadConfig(FILE* config, int* Nchains, int* Nreplica, double** beta_pointer, int* Nstep, char* input_file_format, char* state_file_format, char* accept_file_format, char* exchange_file_format, char* log_file_format, double* J, char* shell_script, char* input2_file_format, int* Burnin, char* average_file_format, char* variance_file_format, char* log2_file_format, char* value_format, char* input3_file_format, char* psrf_file_format, char* log3_file_format);
 
+double log_sum_exp(double a, double b);
+
 
 int main(int argc, char** argv){
-  cout << "Generate multiple RXMC configuration files" << endl;
+  cout << "# Calculate Free energy (log(Z)) by method 1" << endl;
   if(argc<2){
     printf("Usage: %s config_file\n", argv[0]);
     return 0;
@@ -16,12 +19,14 @@ int main(int argc, char** argv){
 
   // load configuration
   char* config_file=argv[1];
-  cout << "Configuration file: " << config_file << endl;
+  cout << "# Configuration file: " << config_file << endl;
   FILE* config=fopen(config_file, "r");
   if(config==NULL){
     cout << "Error in opening the config file" << endl;
     return -1;
   }
+  // input file is the same as RX_multiple.o, so some parameters are not necessary for this calculation
+  
   // configuration for RXMC.o
   int Nchains; // number of Marcov chains
   int Nreplica;
@@ -63,164 +68,113 @@ int main(int argc, char** argv){
   beta=beta_pointer[0];
   int i,j;
   
-  cout << "Number of Marcov chains: " << Nchains << endl;
-  cout << "Number of replicas: " << Nreplica << endl;
-  cout << "Inverse temperatures: ";
+  cout << "# Number of Marcov chains: " << Nchains << endl;
+  cout << "# Number of replicas: " << Nreplica << endl;
+  cout << "# Inverse temperatures: ";
   for(i=0;i<Nreplica;i++){
     cout << beta[i] << ", ";
   }
   cout << endl;
-  cout << "Number of MC steps: " << Nstep << endl;
-  cout << "J: " << J << endl;
-  cout << "Shell script file: " << shell_script << endl;
+  cout << "# Number of MC steps: " << Nstep << endl;
+  cout << "# Burn-in steps: " << Burnin << endl;
 
-  // generate shell script file
-  FILE* shell=fopen(shell_script, "w");
-  if(shell==NULL){
-    cout << "Error in opening the shell script file" << endl;
-    return -1;
-  }
-  fprintf(shell, "echo 'Start RXMC.o and Average_analysis.o (Total %d)'\n", Nchains);
-  
-  FILE* input; // for RXMC.o
-  char* input_file=new char[buffer_length];
-  char* input_buffer=new char[buffer_length];
-  State* s=new State();
-  char* initial_state=s->print();
+  double* log_sum_ebH=new double[Nreplica];
+  double* log_sum_e2bH=new double[Nreplica];
+  int log_sum_exp_init;
+  Hamiltonian* h=new Hamiltonian(J);
 
   // i -> chain index, j -> replica index
-  for(i=0;i<Nchains;i++){
-    // RXMC.o
-    // open input file
-    sprintf(input_file, input_file_format, i+1);
-    input=fopen(input_file, "w");
-    if(input==NULL){
-      cout << "Error in opening the input file" << endl;
-      return -1;
-    }
-    // line 1: Nreplica
-    fprintf(input, "%d # Nreplica\n", Nreplica);
-    // line 2-(Nreplica-1): beta
-    for(j=0;j<Nreplica;j++){
-      fprintf(input, "%.4e # beta for replica %d\n", beta[j], j+1);
-    }
-    // line 2+Nreplica: Nstep
-    fprintf(input, "%d # Nstep\n", Nstep);
-    // line 3+Nreplica: state file
-    fprintf(input, state_file_format, i+1);
-    fprintf(input, " # state file\n");
-    // line 4+Nreplica: accept file
-    fprintf(input, accept_file_format, i+1);
-    fprintf(input, " # accept file\n");
-    // line 5+Nreplica: exchange file
-    fprintf(input, exchange_file_format, i+1);
-    fprintf(input, " # exchange file\n");
-    // line 6+Nreplica: J
-    fprintf(input, "%.4e # J\n", J);
-    // line (7+Nreplica)-(6+2*Nreplica): initial state
-    for(j=0;j<Nreplica; j++){
-      s->init_rand();
-      delete initial_state;
-      initial_state=s->print();
-      fprintf(input, "%s # initial state for replica %d\n", initial_state, i+1);
-    }
-    
-    fclose(input);
+  char* state_file=new char[buffer_length];
+  char* state_file_buffer=new char[buffer_length];
+  FILE* input;
 
-    // add command to shell file
-    fprintf(shell, "./RXMC.o %s", input_file);
-    fprintf(shell, " > ");
-    fprintf(shell, log_file_format, i+1);
-    fprintf(shell, "\n");
-    fprintf(shell, "echo 'Done RXMC.o for chain %d'\n", i+1);
-    
-    // Average_analysis.o
-    for(j=0;j<Nreplica;j++){
-      sprintf(input_buffer, input2_file_format, j+1);
-      sprintf(input_file, input_buffer, i+1);
-      input=fopen(input_file, "w");
+  State* s=new State();
+  char* header=StateHeader();
+  char* state_print=s->print();  
+  int state_buffer_length=max(strlen(header), strlen(state_print))+10; // +10 for \r, \n, \0
+  char* state_buffer=new char[state_buffer_length+10]; // +10 for \r, \n, \0
+
+  int state_load_status;
+  int state_count;
+  double bH;
+  for(j=0;j<Nreplica;j++){
+    log_sum_exp_init=0;
+    for(i=0;i<Nchains;i++){
+      sprintf(state_file_buffer, state_file_format, i+1);
+      sprintf(state_file, state_file_buffer, j+1);
+      input=fopen(state_file, "r");
       if(input==NULL){
-	cout << "Error in opening the input2 file" << endl;
+	cout << "Error in opening state file" << endl;
 	return -1;
       }
-      // line 1: Number of parameters
-      fprintf(input, "%d # Number of parameters\n", s->num_params);
-      // line 2: buffer size (length of print() or StateHeader())
-      char* header=StateHeader();
-      int data_length=max(strlen(header), strlen(initial_state))+10; // +10 for \r, \n, \0
-      fprintf(input, "%d # buffer size\n", data_length);
-      // line 3: input (state file)
-      sprintf(input_buffer, state_file_format, i+1);
-      fprintf(input, input_buffer, j+1);
-      fprintf(input, " # input file (state)\n");
-      // line 4: Number of MC steps
-      fprintf(input, "%d # Number of MC steps\n", Nstep);
-      // line 5: Burnin
-      fprintf(input, "%d # Burnin\n", Burnin);
-      // line 6: Average file
-      sprintf(input_buffer, average_file_format, j+1);
-      fprintf(input, input_buffer, i+1);
-      fprintf(input, " # Average file\n");
-      // line 7: Variance file
-      sprintf(input_buffer, variance_file_format, j+1);
-      fprintf(input, input_buffer, i+1);
-      fprintf(input, " # Variance file\n");
-      // line 8: Value format
-      fprintf(input, "%s # Value format\n", value_format);
-    
+      state_count=0;
+      while(fgets(state_buffer, state_buffer_length+9, input)!=NULL){
+	if(state_buffer[0]=='#'){
+	  continue;
+	}
+	state_load_status=s->load(state_buffer);
+	if(state_load_status==1){
+	  // load succeeded
+	  state_count++;
+	  if(state_count>Burnin){
+	    // calculate beta*H(s)
+	    bH=beta[j]*h->energy(s);
+	    // add exp(beta*H(s)) by log-sum-exp method
+	    if(log_sum_exp_init==0){
+	      log_sum_exp_init=1;
+	      log_sum_ebH[j]=bH;
+	      log_sum_e2bH[j]=2*bH;
+	    }else{
+	      log_sum_ebH[j]=log_sum_exp(log_sum_ebH[j], bH);
+	      log_sum_e2bH[j]=log_sum_exp(log_sum_e2bH[j], 2*bH);
+	    }
+	  }
+	}else{
+	  // load failed
+	  cout << "Failed in loading a state" << endl;
+	  cout << state_buffer << endl;
+	}
+      }
+      
       fclose(input);
-
-      // add command
-      fprintf(shell, "./Average_analysis.o %s", input_file);
-      fprintf(shell, " > ");
-      sprintf(input_buffer, log2_file_format, j+1);
-      fprintf(shell, input_buffer, i+1);
-      fprintf(shell, "\n");
-      fprintf(shell, "echo 'Done Average_analysis.o for chain %d replica %d'\n", i+1, j+1);
+      if(state_count==Nstep){
+	printf("# Succeeded in loading states from chain %d replica %d\n", i+1, j+1);
+      }else{
+	printf("Failed in loading states from chain %d replica %d\n", i+1, j+1);
+	return -1;
+      }	
     }
   }
 
+  // calculate log(Z)
+  printf("# beta log(Z) Var(log(Z)) Delta(log(Z))\n");
+  double N=(Nstep-Burnin)*Nchains*1.0;
   for(j=0;j<Nreplica;j++){
-    // PSRF.o
-    sprintf(input_file, input3_file_format, j+1);
-    input=fopen(input_file,"w");
-    if(input==NULL){
-      cout << "Error in opening the input3 file" << endl;
-      return -1;
-    }
-    // line 1: Number of parameters
-    fprintf(input, "%d # Number of parameters\n", s->num_params);
-    // line 2: Buffer size
-    char* value_print=new char[buffer_length];
-    sprintf(value_print, value_format, 0.0);
-    fprintf(input, "%d # Buffer size\n", (s->num_params)*(1+strlen(value_print)));
-    // line 3: Number of Marcov chains
-    fprintf(input, "%d # Number of Marcov Chains\n", Nchains);
-    // line 4: Average file format
-    sprintf(input_buffer, average_file_format, j+1);
-    fprintf(input, "%s # average file format\n", input_buffer);
-    // line 5: variance file format
-    sprintf(input_buffer, variance_file_format, j+1);
-    fprintf(input, "%s # variance file format\n", input_buffer);
-    // line 6: Nstep-Burnin
-    fprintf(input, "%d # Nstep - Burnin\n", Nstep-Burnin);
-    // line 7: output file format
-    sprintf(input_buffer, psrf_file_format, j+1);
-    fprintf(input, "%s # output file format\n", input_buffer);
-
-    fclose(input);
-
-    // add command
-
-    fprintf(shell, "./PSRF.o %s", input_file);
-    fprintf(shell, " > ");
-    fprintf(shell, log3_file_format, j+1);
-    fprintf(shell, "\n");
-    fprintf(shell, "echo 'Done PSRF.o for replica %d'\n", j+1);
-
+    // Zp=1/Z
+    // logZp=log(1/N sum(exp(bH(s[i]))))
+    double logZp=log_sum_ebH[j]-log(N);
+    // logZp2=log(1/N sum(exp(2bH(s[i]))))
+    double logZp2=log_sum_e2bH[j]-log(N);
+    // log(Var(Zp))=log(N/N-1 (sum(exp(2bH(s[i])))/N-(sum(exp(bH(s[i])))/N)^2))
+    //       =log(N/N-1)+log(exp(logZp2)-exp(2*logpZ))
+    //       =log(N/N-1)+logZp2+log(1-exp(2*logZp-logZp2))
+    double logVarZp=log(N/(N-1))+logZp2+log(1-exp(2.0*logZp-logZp2));
+    // logZ=-logZp
+    double logZ=-logZp;
+    // log(VarZ)=log(VarZp/Zp^4)=logVarZp-4logZp
+    double logVarZ=logVarZp-4.0*logZp;
+    // Var(logZ)=VarZ/Z^2=exp(log(VarZ)-2*logZ)
+    double VarlogZ=exp(logVarZ-2.0*logZ);
+    printf("%12.4e %12.4e %12.4e %12.4e\n", beta[j], logZ, VarlogZ, sqrt(VarlogZ));
   }
-  fclose(shell);
+
+  
   return 1;
+}
+
+double log_sum_exp(double a, double b){
+  // calculate log(exp(a)+exp(b)) = max(a,b)+log(1+exp(-|a-b|);
+  return max(a,b)+log(1+exp(-abs(a-b)));
 }
 
 int loadConfig(FILE* config, int* Nchains, int* Nreplica, double** beta_pointer, int* Nstep, char* input_file_format, char* state_file_format, char* accept_file_format, char* exchange_file_format, char* log_file_format, double* J, char* shell_script, char* input2_file_format, int* Burnin, char* average_file_format, char* variance_file_format, char* log2_file_format, char* value_format, char* input3_file_format, char* psrf_file_format, char* log3_file_format){

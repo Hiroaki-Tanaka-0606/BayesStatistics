@@ -9,7 +9,7 @@ int main(int argc, char** argv){
   cout << "MCMC observable calculation" << endl;
   
   if(argc<3){
-    printf("Usage: %s config_file\n", argv[0]);
+    printf("Usage: %s config_file output_file\n", argv[0]);
     return 0;
   }
 

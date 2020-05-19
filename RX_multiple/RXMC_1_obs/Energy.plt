@@ -121,18 +121,18 @@ set timestamp  font "" norotate
 set trange [ * : * ] noreverse nowriteback
 set urange [ * : * ] noreverse nowriteback
 set vrange [ * : * ] noreverse nowriteback
-set xlabel "Number of steps" 
+set xlabel "" 
 set xlabel  font "" textcolor lt -1 norotate
 set x2label "" 
 set x2label  font "" textcolor lt -1 norotate
-set xrange [ 0.00000 : 2500.00 ] noreverse writeback
-set x2range [ -0.0600000 : 0.540000 ] noreverse writeback
-set ylabel "PSRF" 
+set xrange [ 0.00000 : 0.600000 ] noreverse writeback
+set x2range [ * : * ] noreverse writeback
+set ylabel "" 
 set ylabel  font "" textcolor lt -1 rotate
 set y2label "" 
 set y2label  font "" textcolor lt -1 rotate
-set yrange [ 0.950000 : 1.20000 ] noreverse writeback
-set y2range [ -2.77556e-17 : 1.00000 ] noreverse writeback
+set yrange [ * : * ] noreverse writeback
+set y2range [ * : * ] noreverse writeback
 set zlabel "" 
 set zlabel  font "" textcolor lt -1 norotate
 set zrange [ * : * ] noreverse writeback
@@ -164,7 +164,6 @@ set fontpath
 set psdir
 set fit brief errorvariables nocovariancevariables errorscaling prescale nowrap v5
 GNUTERM = "wxt"
-x = 0.0
-## Last datafile plotted: "../RXMC_1/PSRF_2D_Ising_r10_Parm1.dat"
-plot "../RXMC_1/PSRF_2D_Ising_r1_Parm1.dat" using 1:8 title "{/Symbol b}=0.05" w l, "../RXMC_1/PSRF_2D_Ising_r2_Parm1.dat" using 1:8 title "{/Symbol b}=0.10" w l, "../RXMC_1/PSRF_2D_Ising_r3_Parm1.dat" using 1:8 title "{/Symbol b}=0.15" w l, "../RXMC_1/PSRF_2D_Ising_r4_Parm1.dat" using 1:8 title "{/Symbol b}=0.20" w l, "../RXMC_1/PSRF_2D_Ising_r5_Parm1.dat" using 1:8 title "{/Symbol b}=0.25" w l, "../RXMC_1/PSRF_2D_Ising_r6_Parm1.dat" using 1:8 title "{/Symbol b}=0.30" w l, "../RXMC_1/PSRF_2D_Ising_r7_Parm1.dat" using 1:8 title "{/Symbol b}=0.35" w l, "../RXMC_1/PSRF_2D_Ising_r8_Parm1.dat" using 1:8 title "{/Symbol b}=0.40" w l, "../RXMC_1/PSRF_2D_Ising_r9_Parm1.dat" using 1:8 title "{/Symbol b}=0.45" w l, "../RXMC_1/PSRF_2D_Ising_r10_Parm1.dat" using 1:8 title "{/Symbol b}=0.50" w l
+## Last datafile plotted: "Energy.dat"
+plot "Energy.dat" using 1:2 ps 3 lc rgb "#FF0000" title "Energy"
 #    EOF

@@ -117,8 +117,10 @@ int main(int argc, char** argv){
     }
     // line 1: Number of parameters
     fprintf(input, "%d # Number of parameters\n", s->num_params);
-    // line 2: buffer size (length of print())
-    fprintf(input, "%d # buffer size\n", strlen(initial_state));
+    // line 2: buffer size (length of print() or StateHeader())
+    char* header=StateHeader();
+    int data_length=max(strlen(header), strlen(initial_state))+10; // +10 for \r, \n, \0
+    fprintf(input, "%d # buffer size\n", data_length);
     // line 3: input (state file)
     fprintf(input, state_file_format, i+1);
     fprintf(input, " # input file (state)\n");

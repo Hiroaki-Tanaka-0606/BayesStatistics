@@ -135,10 +135,11 @@ int main(int argc, char** argv){
 	fprintf(variance, "\n");
       }
       if(state_count==Nstep){
-	break;
+	// break;
       }
+    }else{
+      cout << "sscanf failed" << endl;
     }
-
   }
 
   fclose(average);
