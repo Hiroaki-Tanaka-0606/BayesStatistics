@@ -1,4 +1,4 @@
-#include "Model_selection.hpp"
+#include "Model_selection_mND.hpp"
 #include "MC_Metropolis.hpp"
 #include "../randomDistribution/mersenne_twister.hpp"
 #include <iostream>
@@ -40,7 +40,8 @@ int main(int argc, char** argv){
   int buffer_length=256;
   char* state_file=new char[buffer_length]; // development of the state by MC steps
   char* accept_file=new char[buffer_length]; // log of acceptance
-  double J; // bond strength
+  char* sample_file=new char[buffer_length]; // sample data
+  int Nbin; // number of bins
   char* initial_state=new char[state_length+10]; // +10 for \r, \n, \0
 
   // ---->
@@ -52,7 +53,7 @@ int main(int argc, char** argv){
 
   // <---- Load configuration from config_file
   
-  int loadConfig_status=loadConfig(config, &beta, &Nstep, state_file, accept_file, &J, initial_state);
+  int loadConfig_status=loadConfig(config, &beta, &Nstep, state_file, accept_file, sample_file, &Nbin, initial_state);
   
   // ---->
   
@@ -65,7 +66,8 @@ int main(int argc, char** argv){
   cout << "Inverse temperature: " << beta << endl;
   cout << "Number of MC steps: " << Nstep << endl;
   cout << "Output files: " << state_file << ", " << accept_file << endl;
-  cout << "J: " << J << endl;
+  cout << "Sample data: " << sample_file << endl;
+  cout << "Number of bins: " << Nbin << endl;
 
   // load initial state
   int loadInit_status=s->load(initial_state);
@@ -77,14 +79,17 @@ int main(int argc, char** argv){
   }
   cout << "Initial state: " << s->print() << endl;
 
-
-  Hamiltonian* h=new Hamiltonian(J);
-  double sigma=0;
-  MT* mt=new MT();
-
   State* s_next=new State();
   State* s_buff;
   int num_params=s->num_params;
+
+  Hamiltonian* h=new Hamiltonian(sample_file, Nbin);
+  double* sigma=new double[num_params];
+  for(i=0;i<num_params;i++){
+    sigma[i]=0.1;
+  }
+  MT* mt=new MT();
+
 
   FILE* state_output=fopen(state_file, "w");
   FILE* accept_output=fopen(accept_file, "w");
@@ -110,7 +115,7 @@ int main(int argc, char** argv){
   int accept;
   for(i=0;i<Nstep;i++){
     for(j=0;j<num_params;j++){
-      accept=MC_Metropolis(s,s_next,h,j,sigma,beta,mt);
+      accept=MC_Metropolis(s,s_next,h,j,sigma[j],beta,mt);
       if(accept==1){
 	//replace s and s_next
 	s_buff=s_next;

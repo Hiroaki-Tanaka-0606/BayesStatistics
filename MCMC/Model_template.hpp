@@ -11,11 +11,8 @@ public:
   State();
   
   // number of parameters in the state (index 0..num_params-1)
-  static const int num_params;
-  
-  // data header, which appears at the first row of output
-  static const char* header;
-  
+  int num_params;
+    
   // output the state (one-line text)
   char* print();
   

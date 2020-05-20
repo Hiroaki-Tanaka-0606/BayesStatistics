@@ -53,8 +53,8 @@ char* StateHeader(){
 // output the state
 char* State::print(){
   int i,j;
-  char* ret_buff1=new char[3*N];
-  char* ret_buff2=new char[3*N];
+  char* ret_buff1=new char[3*N+1];
+  char* ret_buff2=new char[3*N+1];
   char* ret_buff3;
   ret_buff1[0]='\0';
   ret_buff2[0]='\0';
