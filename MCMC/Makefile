@@ -16,15 +16,15 @@ MCMC_posterior_mND.o: MCMC_posterior_mND_main.o $(model_mND)
 	$(CXX) $^ ../randomDistribution/normalDistribution.a -o $@
 
 
-MCMC_opt_mND.o: MCMC_opt_mND_main.o $(model_mND) MC_Metropolis.o
+MCMC_opt_mND.o: MCMC_opt_mND_main.o $(model_mND) MC_Metropolis.o Acceptance_optimization.o
 	$(CXX) $^ ../randomDistribution/normalDistribution.a -o $@
 
 
 MCMC_obs.o: MCMC_obs_main.o $(model)
 	$(CXX) $^ ../randomDistribution/mersenne_twister.o -o $@
 
-RandomStates.o: RandomStates_main.o $(model)
-	$(CXX) $^ ../randomDistribution/mersenne_twister.o -o $@
+RandomStates.o: RandomStates_main.o $(model_mND)
+	$(CXX) $^ ../randomDistribution/normalDistribution.a -o $@
 
 .cpp.o:
 	$(CXX) -c $<

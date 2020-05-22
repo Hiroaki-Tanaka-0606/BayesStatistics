@@ -3,14 +3,13 @@
 #include "../randomDistribution/mersenne_twister.hpp"
 #include <iostream>
 #include <string.h>
+#include "Acceptance_optimization.hpp"
 
 // <---- ----> means an area to be changed according to the model used in the MCMC calculation
 
 using namespace std;
 
-int loadConfig2(FILE* config2, double* acceptance_target, int num_params, double* sigma_coeff, double* sigma_stop);
-
-int Acceptance_optimization(int parm_index, double* sigma_small, double* sigma, double* sigma_large, int* stage, int* accept, int* trial, double target, double sigma_coeff, double sigma_stop);
+int loadConfig2(FILE* config2, double* acceptance_target, int num_params, double* error_coeff, double* error_stop);
 
 int main(int argc, char** argv){
   // initial message
@@ -145,6 +144,7 @@ int main(int argc, char** argv){
   char* state_string=s->print();
   int accept;
   int sigma_update;
+  char index_print[32];
   for(i=0;i<Nstep;i++){
     sigma_update=0;
     for(j=0;j<num_params;j++){
@@ -157,7 +157,8 @@ int main(int argc, char** argv){
 	s=s_buff;
 	accept_count[j]++;
       }
-      sigma_update+=Acceptance_optimization(j, &sigma_small[j], &sigma[j], &sigma_large[j], &opt_stage[j], &accept_count[j], &trial_count[j], acceptance_target[j], error_coeff, error_stop);
+      sprintf(index_print, "%d", j+1);
+      sigma_update+=Acceptance_optimization(index_print, &sigma_small[j], &sigma[j], &sigma_large[j], &opt_stage[j], &accept_count[j], &trial_count[j], acceptance_target[j], error_coeff, error_stop);
     }
     if(sigma_update>0){
       cout << "Current development parameters: ";
@@ -202,81 +203,6 @@ int main(int argc, char** argv){
 
 }
 
-// f(sigma): acceptance ratio
-// F(sigma)=accept/trial: simulated acceptance ratio
-// considering error sqrt(trial), determine whether f(x(t)) is larger than target or not
-// F(x(t))+error_coeff*error < target -> f(x(t)) is smaller than target
-// F(x(t))-error_coeff*error > target -> f(x(t)) is larger than target
-// error=1/sqrt(trial)
-// error_coeff: coefficient (input)
-// development of arguemnt sigma by bisection
-// stop when error < error_stop (input)
-int Acceptance_optimization(int parm_index, double* sigma_small, double* sigma, double* sigma_large, int* stage, int* accept, int* trial, double target, double error_coeff, double error_stop){
-
-  double Fsigma=(*accept)*1.0/(*trial);
-  double error=1.0/sqrt(*trial);
-  switch(*stage){
-  case 0:
-    // find sigma s.t. F(sigma) < target < x(0)=1
-    if(Fsigma + error_coeff*error < target){
-      // sigma is found, start bisection
-      cout << "Bisection optimizaztion start for parameter " << parm_index+1 << endl;
-      cout << *accept << " / " << *trial << " +- " << error << " < " << target << endl;
-      *sigma_small=*sigma;
-      // sigma_large is determined in the previous step ( or initial value 0)
-      *sigma=(*sigma_small+*sigma_large)/2.0;
-      *stage=1;
-      *accept=0;
-      *trial=0;
-      return 1;
-    }
-    if(Fsigma - error_coeff*error > target){
-      // sigma is found to be too small to satisfy F(sigma) < target
-      cout << "Update parameter " << parm_index+1 << endl;
-      cout << *accept << " / " << *trial << " +- " << error << " > " << target << endl;
-      *sigma_large=*sigma;
-      *sigma*=2;
-      *accept=0;
-      *trial=0;
-      return 1;
-    }
-    break;
-  case 1:
-    // bisection optimization
-    if(Fsigma + error_coeff*error < target){
-      // F(sigma_small), F(sigma) < target < F(sigma_large)
-      cout << "Bisection update for parameter " << parm_index+1 << endl;
-      cout << *accept << " / " << *trial << " +- " << error << " < " << target << endl;
-      *sigma_small=*sigma;
-      *sigma=(*sigma_small+*sigma_large)/2.0;
-      *accept=0;
-      *trial=0;
-      return 1;
-    }
-    if(Fsigma - error_coeff*error > target){
-      // F(sigma_small) < target < F(sigma), F(sigma_large)
-      cout << "Bisection update for parameter " << parm_index+1 << endl;
-      cout << *accept << " / " << *trial << " +- " << error << " > " << target << endl;
-      *sigma_large=*sigma;
-      *sigma=(*sigma_small+*sigma_large)/2.0;
-      *accept=0;
-      *trial=0;
-      return 1;
-    }
-    if(error<error_stop){
-      // F(sigma) ~ target
-      cout << "Bisection optimization ended for parameter " << parm_index+1 << endl;
-      cout << *accept << " / " << *trial << " +- " << error << " ~ " << target << endl;
-      *stage=2;
-      return 0;
-    }
-    break;
-  case 2:
-    // optimized
-    break;
-  }
-  return 0;
-}
 int loadConfig2(FILE* config, double* acceptance_target, int num_params, double* error_coeff, double* error_stop){
 
   int buffer_length=256;
