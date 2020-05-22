@@ -30,6 +30,7 @@ int main(int argc, char** argv){
   State* s=new State();
   char* s_print=s->print();
   int state_length=strlen(s_print);
+  int num_params=s->num_params;
 
   int i,j;
 
@@ -42,6 +43,7 @@ int main(int argc, char** argv){
   char* accept_file=new char[buffer_length]; // log of acceptance
   char* sample_file=new char[buffer_length]; // sample data
   int Nbin; // number of bins
+  double* sigma=new double[num_params]; // development parameter for each parameter
   char* initial_state=new char[state_length+10]; // +10 for \r, \n, \0
 
   // ---->
@@ -53,7 +55,7 @@ int main(int argc, char** argv){
 
   // <---- Load configuration from config_file
   
-  int loadConfig_status=loadConfig(config, &beta, &Nstep, state_file, accept_file, sample_file, &Nbin, initial_state);
+  int loadConfig_status=loadConfig(config, &beta, &Nstep, state_file, accept_file, sample_file, &Nbin, sigma, num_params, initial_state);
   
   // ---->
   
@@ -79,15 +81,16 @@ int main(int argc, char** argv){
   }
   cout << "Initial state: " << s->print() << endl;
 
+  cout << "Development parameters: ";
+  for(i=0;i<num_params;i++){
+    cout << sigma[i] << ", ";
+  }
+  cout << endl;
+
   State* s_next=new State();
   State* s_buff;
-  int num_params=s->num_params;
 
   Hamiltonian* h=new Hamiltonian(sample_file, Nbin);
-  double* sigma=new double[num_params];
-  for(i=0;i<num_params;i++){
-    sigma[i]=0.1;
-  }
   MT* mt=new MT();
 
 

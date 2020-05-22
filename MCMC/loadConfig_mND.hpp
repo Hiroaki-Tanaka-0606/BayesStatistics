@@ -3,7 +3,7 @@
 
 #include <iostream>
 
-int loadConfig(FILE* config, double* beta, int* Nstep, char* state_file, char* accept_file, char* sample_file, int* Nbin, char* initial_state);
+int loadConfig(FILE* config, double* beta, int* Nstep, char* state_file, char* accept_file, char* sample_file, int* Nbin, double* sigma, int num_params, char* initial_state);
 
 #endif
 

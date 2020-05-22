@@ -3,7 +3,7 @@
 #include <string.h>
 
 using namespace std;
-int loadConfig(FILE* config, double* beta, int* Nstep, char* state_file, char* accept_file, char* sample_file, int* Nbin, char* initial_state){
+int loadConfig(FILE* config, double* beta, int* Nstep, char* state_file, char* accept_file, char* sample_file, int* Nbin, double* sigma, int num_params, char* initial_state){
   int buffer_length=256;
   char line[buffer_length];
   char* fgets_status;
@@ -80,7 +80,23 @@ int loadConfig(FILE* config, double* beta, int* Nstep, char* state_file, char* a
     return 0;
   }  
 
-  // line 7: (optional) initial state
+  // line 7: development parameter
+  int i;
+  for(i=0;i<num_params;i++){
+    sscanf_status=fscanf(config, "%lf", &sigma[i]);
+    if(sscanf_status!=1){
+      cout << "Error in parsing line 7 of the configuration file" << endl;
+      return 0;
+    }
+  }
+  // pass to the end of line 7
+  fgets_status=fgets(line, buffer_length, config);
+  if(fgets_status==NULL){
+    cout << "Error in loading line 7 of the configuration file" << endl;
+    return 0;
+  }
+  
+  // line 8: (optional) initial state
   int state_length=strlen(initial_state);
   fgets_status=fgets(initial_state, state_length, config);
   if(fgets_status!=NULL){
