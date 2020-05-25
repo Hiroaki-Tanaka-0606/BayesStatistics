@@ -65,9 +65,9 @@ char* StateHeader(){
 // output the state
 char* State::print(){
   int i,j;
-  // format=%12.4e + " "
-  char* ret_buff1=new char[13*NND+13*(NND-1)+1];
-  char* ret_buff2=new char[13*NND+13*(NND-1)+1];
+  // format=%16.8e + " "
+  char* ret_buff1=new char[17*NND+17*(NND-1)+1];
+  char* ret_buff2=new char[17*NND+17*(NND-1)+1];
   char* ret_buff3;
   ret_buff1[0]='\0';
   ret_buff2[0]='\0';
@@ -250,7 +250,7 @@ double Hamiltonian::energy(State* s){
   int NND=State::NND;
   int i;
   for(i=0;i<NND;i++){
-    if(s->a[i] >= s->a[i+1]){
+    if((s->a[i+1])-(s->a[i]) <= 0){
       return NAN;
     }
   }

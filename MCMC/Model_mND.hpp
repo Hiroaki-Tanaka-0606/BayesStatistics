@@ -55,11 +55,11 @@ private:
   const char* format_l="%lf";
   
   // iterative format for print();
-  const char* format_iter="%s%12.4e ";
+  const char* format_iter="%s%16.8e ";
 
   // iterative format for load();
   const char* format_l_iter="%%*lf%s";
-
+  
   ND* nd;
 };
 
