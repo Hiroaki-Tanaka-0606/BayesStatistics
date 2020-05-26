@@ -104,7 +104,13 @@ void State::next(int index, double sigma, State* s_next){
   
   if(index<NND){
     // update of mu[index]
-    s_next->mu[index]+=sigma*nd->rand();
+    double dmu=sigma*nd->rand();
+    if(abs(dmu)>DMU_MAX){
+      // will be rejected
+      s_next->mu[index]=NAN;
+    }else{
+      s_next->mu[index]+=dmu;
+    }
   }else{
     // update of a[index-NND+1];
     // if a[i-1] < a[i] < a[i+1] does not hold, Hamiltonian::energy returns inf -> MC_Metropolis returns rejection
@@ -251,6 +257,9 @@ double Hamiltonian::energy(State* s){
   int i;
   for(i=0;i<NND;i++){
     if((s->a[i+1])-(s->a[i]) <= 0){
+      return NAN;
+    }
+    if(!isfinite(s->mu[i])){
       return NAN;
     }
   }

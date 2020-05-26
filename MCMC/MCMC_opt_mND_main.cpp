@@ -164,6 +164,8 @@ int main(int argc, char** argv){
       cout << "Current development parameters: ";
       for(j=0;j<num_params;j++){
 	cout << sigma[j] << ", ";
+	// accept_count[j]=0;
+	// trial_count[j]=0;
       }
       cout << endl << endl;
     }
@@ -173,7 +175,7 @@ int main(int argc, char** argv){
   cout << "--------" << endl;
   cout << "Development parameters:" << endl;
   for(i=0;i<num_params;i++){
-    cout << sigma[i] << " ";
+    printf("%12.4e ", sigma[i]);
   }
   cout << endl;
   

@@ -79,6 +79,7 @@ int main(int argc, char** argv){
   
   for(i=0;i<Nchains;i++){
     state_count=0;
+    line_count=0;
     sprintf(file_name, state_file_format, i+1);
     state_input=fopen(file_name, "r");
     while(fgets(buffer, data_length, state_input)!=NULL){

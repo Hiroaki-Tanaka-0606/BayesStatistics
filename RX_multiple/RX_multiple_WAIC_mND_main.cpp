@@ -100,6 +100,9 @@ int main(int argc, char** argv){
   double* posterior_xi=new double[Nbin];
   double* log_p_xi=new double[Nbin];
   double* log_p_xi2=new double[Nbin];
+  double* log_p_xi3=new double[Nbin];
+  double* log_p_xi4=new double[Nbin];
+
   double p_xi;
   for(i=0;i<Nbin;i++){
     posterior_xi[i]=0.0;
@@ -110,6 +113,7 @@ int main(int argc, char** argv){
   
   for(i=0;i<Nchains;i++){
     state_count=0;
+    line_count=0;
     sprintf(file_name, state_file_format, i+1);
     state_input=fopen(file_name, "r");
     while(fgets(buffer, data_length, state_input)!=NULL){
@@ -129,6 +133,8 @@ int main(int argc, char** argv){
 	    posterior_xi[j]+=p_xi;
 	    log_p_xi[j]+=log(p_xi);
 	    log_p_xi2[j]+=pow(log(p_xi),2);
+	    log_p_xi3[j]+=pow(log(p_xi),3);
+	    log_p_xi4[j]+=pow(log(p_xi),4);
 	  }
 	}
       }else{
@@ -153,21 +159,27 @@ int main(int argc, char** argv){
   // T_n=-1/Nsample \sum_{i: bin index} Count[i]*log[posterior(Xvalue[i])]
   double T_n=0.0;
   double V_n=0.0;
-  double T_ni, V_ni;
+  double T_ni, V_ni, dV_ni;
+  double dV_n=0.0;
   for(i=0;i<Nbin;i++){
     // divide by (Nstep-Burnin)*Nchains to normalize(average)
     posterior_xi[i]/=((Nstep-Burnin)*Nchains*1.0);
     log_p_xi[i]/=((Nstep-Burnin)*Nchains*1.0);
     log_p_xi2[i]/=((Nstep-Burnin)*Nchains*1.0);
+    log_p_xi3[i]/=((Nstep-Burnin)*Nchains*1.0);
+    log_p_xi4[i]/=((Nstep-Burnin)*Nchains*1.0);
     T_n+=-Count[i]*1.0*log(posterior_xi[i])/Nsample;
     V_ni=log_p_xi2[i]-pow(log_p_xi[i],2);
+    dV_ni=log_p_xi4[i]-4*log_p_xi3[i]*log_p_xi[i]-pow(log_p_xi2[i],2)+8*log_p_xi2[i]*pow(log_p_xi[i],2)-4*pow(log_p_xi[i],4);
     V_n+=Count[i]*V_ni;
+    dV_n+=Count[i]*dV_ni;
     printf("%d, %12.4e, %d, %12.4e, %12.4e\n", i+1, Xvalue[i], Count[i], posterior_xi[i], V_ni);
   }
 
-  printf("T_n: %12.4e\n", T_n);
-  printf("V_n: %12.4e\n", V_n);
-  printf("WAIC: %12.4e\n", T_n+V_n/Nsample);
+  printf("T_n: %16.8e\n", T_n);
+  printf("V_n: %16.8e\n", V_n);
+  printf("dV_n: %16.8e\n", dV_n);
+  printf("WAIC: %16.8e += %16.8e\n", T_n+V_n/Nsample, dV_n/Nsample);
   
 }
 int loadConfig(FILE* config, int* Nchains, char* state_file_format, int* Nstep, int* Burnin, char* sample_file, int* Nbin){
