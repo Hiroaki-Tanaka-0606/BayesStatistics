@@ -1,5 +1,6 @@
 # Programs
 X = number of normal distributions
+- RandomDistribution_#{X}ND.o
 - RXMC_opt_#{X}ND.o
 - RX_multiple_#{X}ND.o
 - RXMC_#{X}ND.o

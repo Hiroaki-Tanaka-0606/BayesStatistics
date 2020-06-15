@@ -4,7 +4,7 @@
 #include "../randomDistribution/mersenne_twister.hpp"
 #include <iostream>
 #include <string.h>
-#include "../MCMC/Acceptance_optimization.hpP"
+#include "../MCMC/Acceptance_optimization.hpp"
 
 using namespace std;
 

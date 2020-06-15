@@ -1,4 +1,4 @@
-#include "loadConfig_2D_ising.hpp"
+#include "loadConfig_2D_Ising.hpp"
 #include <iostream>
 #include <string.h>
 
