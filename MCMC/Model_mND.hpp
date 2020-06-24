@@ -3,7 +3,7 @@
 
 // mixed normal distribution used in MCMC simulation
 // number of normal distributions
-#define NUM_NORM_DISTRIBS 2
+#define NUM_NORM_DISTRIBS 4
 // min, max of mu
 // only used in init_rand
 #define MU_MIN -5

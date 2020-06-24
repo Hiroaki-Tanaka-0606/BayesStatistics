@@ -1,4 +1,4 @@
-all: RX_multiple.o Free_energy_1.o Free_energy_2.o RX_multiple_mND.o Free_energy_1_mND.o Free_energy_2_mND.o RX_multiple_posterior_mND.o RX_multiple_WAIC_mND.o
+all: RX_multiple.o Free_energy_1.o Free_energy_2.o RX_multiple_mND.o Free_energy_1_mND.o Free_energy_2_mND.o RX_multiple_posterior_mND.o RX_multiple_WAIC_mND.o State_histogram.o
 
 model = ../MCMC/Model_2D_Ising.o
 model_mND = ../MCMC/Model_mND.o
@@ -27,6 +27,9 @@ RX_multiple_posterior_mND.o: RX_multiple_posterior_mND_main.o
 	$(CXX) $^ $(model_mND) $(ND) -o $@
 
 RX_multiple_WAIC_mND.o: RX_multiple_WAIC_mND_main.o
+	$(CXX) $^ $(model_mND) $(ND) -o $@
+
+State_histogram.o: State_histogram_main.o
 	$(CXX) $^ $(model_mND) $(ND) -o $@
 
 .cpp.o:
